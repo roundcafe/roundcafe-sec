@@ -1,4 +1,4 @@
 roundcafe-sec
 =============
 
-Easy instalable security software for Linux - Centos
+Easy installable security software for Linux - Centos
