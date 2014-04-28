@@ -1,28 +1,5 @@
 #! /bin/bash
 
-#------------------------------------------------------------------------------
-#Copyright (c) 2014 roundcafe
-#
-#Permission is hereby granted, free of charge, to any person obtaining a copy
-#of this software and associated documentation files (the "Software"), to deal
-#in the Software without restriction, including without limitation the rights
-#to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#copies of the Software, and to permit persons to whom the Software is
-#furnished to do so, subject to the following conditions:
-#
-#The above copyright notice and this permission notice shall be included in all
-#copies or substantial portions of the Software.
-#
-#THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-#SOFTWARE.
-#--------------------------------------------------------------------------------
-
-
 RPMS_DIR='/root/rpmbuild/RPMS/x86_64'
 RPM_TYPE=x86_64.rpm
 
@@ -39,6 +16,7 @@ exit ${error_code}
 }
 
 trap f ERR
+. snort_install_config.sh
 
 function install_rpm(){
 trap f ERR
@@ -119,14 +97,13 @@ install_rpm libdnet
 install_rpm libdnet-devel
 install_rpm tcpdump
 install_rpm daq daq-2.0.2-1.src.rpm src '2.0.2-1' 'https://www.snort.org/dl/snort-current' '68293f5a9f95943910edb60b387d39fc'
-install_rpm snort snort-2.9.6.0-1.src.rpm src '2.9.6.0-1' 'https://www.snort.org/dl/snort-current' '617d1d59a3adf2d218bd6649b8f4a2b4'
+install_rpm snort snort-2.9.6.1-1.src.rpm src '2.9.6.1-1' 'https://www.snort.org/dl/snort-current' '39c671b420241f46a0a5d2daa3b5620f'
 }
 
-#install_required_rpm_files
+install_required_rpm_files
 
 
 SNORT_RULES_URL=https://www.snort.org/reg-rules
-OINK_CODE='place for your oink code'
 SNORT_RULES_FILE='snortrules-snapshot-2960.tar.gz'
 
 #SNORT_RULES_FILE_MD5='557b096836c2546e93b0061ba5b51680'
@@ -158,9 +135,6 @@ mv -f ~/snort/etc/* /etc/snort/
 rm -rf /etc/snort/rules /etc/snort/preproc_rules /etc/snort/so_rules
 mv -i ~/snort/rules ~/snort/preproc_rules ~/snort/so_rules /etc/snort/
 
-
-
-
 edit_config_file '/etc/snort/snort.conf'     '^ipvar HOME_NET($| .*$)'              'ipvar HOME_NET 10.0.2.25\/24'
 edit_config_file '/etc/snort/snort.conf'     '^ipvar EXTERNAL_NET($| .*$)'          'ipvar EXTERNAL_NET !$HOME_NET'
 edit_config_file '/etc/snort/snort.conf'     '^var RULE_PATH($| .*$)'               'var RULE_PATH \/etc\/snort\/rules'
@@ -173,16 +147,9 @@ edit_config_file '/etc/snort/snort.conf'     '^ipvar DNS_SERVERS($| .*$)'       
 edit_config_file '/etc/snort/snort.conf'     '^ipvar SMTP_SERVERS($| .*$)'          'ipvar SMTP_SERVERS $HOME_NET'
 edit_config_file '/etc/snort/snort.conf'     '^ipvar HTTP_SERVERS($| .*$)'          'ipvar HTTP_SERVERS $HOME_NET'
 
-edit_config_file '/etc/snort/snort.conf'     '^dynamicpreprocessor directory($| .*$)'  'dynamicpreprocessor directory \/usr\/lib64\/snort-2.9.6.0_dynamicpreprocessor\/'
-edit_config_file '/etc/snort/snort.conf'     '^dynamicengine($| .*$)'                  'dynamicengine \/usr\/lib64\/snort-2.9.6.0_dynamicengine\/libsf_engine.so.0'
+edit_config_file '/etc/snort/snort.conf'     '^dynamicpreprocessor directory($| .*$)'  'dynamicpreprocessor directory \/usr\/lib64\/snort-2.9.6.1_dynamicpreprocessor\/'
+edit_config_file '/etc/snort/snort.conf'     '^dynamicengine($| .*$)'                  'dynamicengine \/usr\/lib64\/snort-2.9.6.1_dynamicengine\/libsf_engine.so.0'
 edit_config_file '/etc/snort/snort.conf'     '^dynamicdetection directory($| .*$)'     'dynamicdetection directory \/etc\/snort\/so_rules\/precompiled\/RHEL-6-0\/x86-64\/2.9.6.0\/'
-
-#edit_config_file '/etc/snort/snort.conf'     '^($| .*$)'              ''
-#edit_config_file '/etc/snort/snort.conf'     '^($| .*$)'              ''
-#edit_config_file '/etc/snort/snort.conf'     '^($| .*$)'              ''
-#edit_config_file '/etc/snort/snort.conf'     '^($| .*$)'              ''
-#edit_config_file '/etc/snort/snort.conf'     '^($| .*$)'              ''
-#edit_config_file '/etc/snort/snort.conf'     '^($| .*$)'              ''
 
 touch /etc/snort/rules/white_list.rules
 touch /etc/snort/rules/black_list.rules
@@ -197,10 +164,8 @@ if [ ${SELINUX_STATUS} == 'Enforcing' ]; then
    chcon -R system_u:object_r:lib_t:s0 /etc/snort/so_rules/precompiled/RHEL-6-0/
 fi
 
-#Now, you should be able to start Snort, i.e.
-
-    # /etc/init.d/snortd start
- #   Starting snort: Spawning daemon child...
- #   My daemon child 1904 lives...
- #   Daemon parent exiting (0)                         [  OK  ]
-
+echo ''
+echo 'now you can test the installation with the -T option to snort, like that:'
+echo ''
+echo 'snort -T -c /etc/snort/snort.conf -i eth0 -u snort -g snort'
+echo ''
